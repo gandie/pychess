@@ -10,7 +10,7 @@ logging.basicConfig(
 
 class PieceExperiment:
     '''
-    A chess board to put pieces on which do not attack each other
+    A chess board to place pieces which do not attack each other
     '''
 
     def __init__(self, loglevel, piece_type=chess.QUEEN,

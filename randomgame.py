@@ -27,8 +27,8 @@ class RandomGame:
             next_move = self.fullRandomStrategy()
             self.board.push(next_move)
             print()
-            print(self.board)
-            time.sleep(.5)
+            print(self.board.unicode())
+            time.sleep(.01)
         print(self.board.result())
         print(len(self.board.move_stack))
 

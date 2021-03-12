@@ -12,17 +12,17 @@ class LBChess:
     no reason but boredom and for fun
     '''
 
-    def __init__(self, board, color, fullrandom=False):
+    def __init__(self, board, color, depth=1, fullrandom=False):
         self.board = board.copy()
         self.color = color
         self.fullrandom = fullrandom
+        self.depth = depth
 
     def next_move(self):
         '''
         Calculate next move and return it
         Testbed for experiments on how to play chess
         '''
-        
         assert self.board.turn == self.color, 'Not my turn!'
 
         if self.fullrandom:
@@ -30,21 +30,21 @@ class LBChess:
             self.board.push(move)
             return move
 
-        gametree = GameTree(self.board, depth=1)
+        gametree = GameTree(self.board, depth=self.depth, rating=BoardRating)
+
+        if self.depth > 1:
+            gametree.backpropagation()
 
         possible_nodes = []
-        for node in gametree.traverse(gametree.rootNode):
+        for node in gametree.traverse(
+            gametree.rootNode,
+            node_filter=lambda n: n.level == 1
+        ):
 
-            if node == gametree.rootNode:
-                continue
-
-            rater = BoardRating(node.board)
-            rating = rater.rate()
-
-            if rating[not self.color] == 0.99:
+            if node.rating[not self.color] == 0.99:
                 print('Found dangerous position, skipping ...')
                 continue
-            if rating[self.color] == 1:
+            if node.rating[self.color] == 1:
                 print('Found winning move!')
                 return node.board.pop()
 
@@ -72,7 +72,7 @@ if __name__ == '__main__':
     while games_played < limit:
 
         board = chess.Board()
-        white_player = LBChess(board, chess.WHITE)
+        white_player = LBChess(board, chess.WHITE, depth=2)
         black_player = LBChess(board, chess.BLACK, fullrandom=True)
         game_start = time.time()
 
@@ -80,11 +80,11 @@ if __name__ == '__main__':
             w = white_player.next_move()
             black_player.other_move(w)
             board.push(w)
-            #print()
-            #print(board.unicode())
+            print()
+            print(board.unicode())
 
             if board.is_game_over():
-                #print(board.unicode())
+                print(board.unicode())
                 print(board.result())
                 games_played += 1
                 break
@@ -92,11 +92,11 @@ if __name__ == '__main__':
             b = black_player.next_move()
             white_player.other_move(b)
             board.push(b)
-            #print()
-            #print(board.unicode())
+            print()
+            print(board.unicode())
 
             if board.is_game_over():
-                #print(board.unicode())
+                print(board.unicode())
                 print(board.result())
                 games_played += 1
                 break

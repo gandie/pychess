@@ -9,7 +9,7 @@ from lbchess import LBChess
 
 class TestLBChess(unittest.TestCase):
 
-    def test_checkmate_in_one(self):
+    def notest_checkmate_in_one(self):
         '''
         https://chess.stackexchange.com/questions/29535/what-moves-solve-this-mate-in-2
 
@@ -36,7 +36,7 @@ class TestLBChess(unittest.TestCase):
         '''
         checkmate_in_two = '7r/1p3Q1p/2q5/3bk3/1Q2p3/2P5/r2P2PP/2KR4'
         self.board = chess.Board(fen=checkmate_in_two)
-        white_player = LBChess(self.board, chess.WHITE, depth=2)
+        white_player = LBChess(self.board, chess.WHITE, depth=3)
         next_move = white_player.next_move()
         self.board.push(next_move)
         print(next_move)
@@ -57,7 +57,7 @@ class TestLBChess(unittest.TestCase):
             'Did not detect second move of checkmate in two!'
         )
 
-    def no_test_checkmate_in_three(self):
+    def notest_checkmate_in_three(self):
         '''
         https://chess.stackexchange.com/questions/34246/black-to-move-and-mate-in-3
 
@@ -66,7 +66,7 @@ class TestLBChess(unittest.TestCase):
         checkmate_in_three = '5r1r/ppk3p1/8/2bB4/3n4/7b/PP4PP/RN1QR1K1'
         self.board = chess.Board(fen=checkmate_in_three)
         self.board.turn = chess.BLACK
-        white_player = LBChess(self.board, chess.BLACK, depth=4)
+        white_player = LBChess(self.board, chess.BLACK, depth=5)
         next_move = white_player.next_move()
         self.board.push(next_move)
         print(next_move)

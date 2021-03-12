@@ -33,7 +33,7 @@ class GameTree:
             return
         level = self.depth - depth + 1
         for move in node.board.legal_moves:
-            newboard = node.board.copy()
+            newboard = node.board.copy(stack=False)
             newboard.push(move)
             new_node = GameNode(newboard, node, level)
             if self.rating is not None:
@@ -58,6 +58,22 @@ class GameTree:
                 self.rootNode,
                 node_filter=lambda n: n.level == level
             ):
+
+                if not node.children:
+                    continue
+
+                color = node.board.turn
+
+                win_positions = [
+                    child
+                    for child in node.children
+                    if child.rating['finished']
+                    and child.rating[color] == 1
+                ]
+
+                if win_positions:
+                    node.rating[color] = 0.99
+
                 ratings = [
                     child.rating
                     for child in node.children
@@ -71,6 +87,7 @@ class GameTree:
                 if not same:
                     continue
                 node.rating = ratings[0]
+
 
 
 if __name__ == '__main__':

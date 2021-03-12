@@ -62,6 +62,8 @@ class GameTree:
                     child.rating
                     for child in node.children
                 ]
+                if not ratings:
+                    continue
                 same = all(
                     ratings[0] == rating
                     for rating in ratings

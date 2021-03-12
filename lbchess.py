@@ -44,9 +44,10 @@ class LBChess:
             if node.rating[not self.color] == 0.99:
                 print('Found dangerous position, skipping ...')
                 continue
-            if node.rating[self.color] == 1:
+            if node.rating[self.color] >= 0.99:
                 print('Found winning move!')
-                return node.board.pop()
+                possible_nodes = [node]
+                break
 
             possible_nodes.append(node)
 
@@ -64,6 +65,7 @@ class LBChess:
     def other_move(self, move):
         assert self.board.turn != self.color, 'My turn!'
         self.board.push(move)
+
 
 if __name__ == '__main__':
 

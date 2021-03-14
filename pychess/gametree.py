@@ -36,30 +36,39 @@ class GameTree:
 
     def create_nodes(self, node, depth):
         '''
-        Recursively create children from given Node to a given depth
+        Build up tree
         '''
-        if depth == 0:
-            return
-        level = self.depth - depth + 1
-        node_board = chess.Board(fen=node.board_fen)
-        for move in node_board.legal_moves:
-            node_board.push(move)
 
-            new_node = GameNode(
-                board_fen=node_board.fen(),
-                move_uci=move.uci(),
-                color=node_board.turn,
-                parent=node,
-                level=level
-            )
+        def create_children(node, level):
+            children = []
 
-            self.logger.debug('Node created on level %s' % level)
-            if self.rating is not None:
-                rater = self.rating(node_board)
-                new_node.rating = rater.rate()
-            node.children.append(new_node)
-            node_board.pop()
-            self.create_nodes(new_node, depth - 1)
+            node_board = chess.Board(fen=node.board_fen)
+            for move in node_board.legal_moves:
+                node_board.push(move)
+
+                new_node = GameNode(
+                    board_fen=node_board.fen(),
+                    move_uci=move.uci(),
+                    color=node_board.turn,
+                    parent=node,
+                    level=level
+                )
+
+                if self.rating is not None:
+                    rater = self.rating(node_board)
+                    new_node.rating = rater.rate()
+                children.append(new_node)
+                node_board.pop()
+
+            return children
+
+        for index in range(0, self.depth):
+            for node in self.traverse(
+                self.rootNode,
+                node_filter=lambda n: n.level == index
+            ):
+                children = create_children(node, index + 1)
+                node.children = children
 
     def traverse(self, node, node_filter=None):
         '''

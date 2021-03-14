@@ -14,9 +14,18 @@ Written for absolutely no reason but boredom.
 # Installation
 
 ```
-pip install -r requirements.txt
 python setup.py install
 ```
+
+# Development
+
+For development / testing install `dev_requirements.txt` using pip:
+
+```
+pip install -r dev_requirements.txt
+```
+
+Now you can call `tox` to run tests, check `tox.ini` for settings
 
 # Links
 

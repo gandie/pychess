@@ -1,4 +1,5 @@
 import chess
+import logging
 
 
 class GameNode:
@@ -20,10 +21,13 @@ class GameTree:
     Do NOT call this with depth >= 5, unless u have a LOT of memory
     '''
 
-    def __init__(self, board, depth, rating=None):
+    def __init__(self, board, depth, rating=None, loglevel=logging.DEBUG):
         self.rootNode = GameNode(board.fen(), None, board.turn, None, 0)
         self.depth = depth
         self.rating = rating
+
+        self.logger = logging.getLogger('GameTree')
+        self.logger.setLevel(loglevel)
 
         self.create_nodes(self.rootNode, self.depth)
 
@@ -46,7 +50,7 @@ class GameTree:
                 level=level
             )
 
-            print('Node created on level %s' % level)
+            self.logger.debug('Node created on level %s' % level)
             if self.rating is not None:
                 rater = self.rating(node_board)
                 new_node.rating = rater.rate()

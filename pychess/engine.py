@@ -1,6 +1,7 @@
 import chess
 import random
 import time
+import logging
 
 from pychess.gametree import GameTree
 from pychess.boardrating import BoardRating
@@ -12,11 +13,15 @@ class LBChess:
     no reason but boredom and for fun
     '''
 
-    def __init__(self, board, color, depth=1, fullrandom=False):
+    def __init__(self, board, color, depth=1, fullrandom=False,
+                 loglevel=logging.DEBUG):
         self.board = board.copy()
         self.color = color
         self.fullrandom = fullrandom
         self.depth = depth
+
+        self.logger = logging.getLogger('LBChess')
+        self.logger.setLevel(loglevel)
 
     def next_move(self):
         '''
@@ -42,17 +47,17 @@ class LBChess:
         ):
 
             if node.rating[not self.color] == 0.99:
-                print('Found dangerous position, skipping ...')
+                self.logger.info('Found dangerous position, skipping ...')
                 continue
             if node.rating[self.color] >= 0.99:
-                print('Found winning move!')
+                self.logger.info('Found winning move!')
                 possible_nodes = [node]
                 break
 
             possible_nodes.append(node)
 
         if not possible_nodes:
-            print(' No good move found! Will pick randomly')
+            self.logger.info(' No good move found! Will pick randomly')
             move = random.choice(list(self.board.legal_moves))
             self.board.push(move)
             return move

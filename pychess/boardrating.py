@@ -1,4 +1,5 @@
 import chess
+import logging
 
 
 class BoardRating:
@@ -6,8 +7,10 @@ class BoardRating:
     Pass a chess board and get rating
     '''
 
-    def __init__(self, board):
+    def __init__(self, board, loglevel=logging.DEBUG):
         self.board = board
+        self.logger = logging.getLogger('BoardRating')
+        self.logger.setLevel(loglevel)
 
     def parse_result(self, rating):
 

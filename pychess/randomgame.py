@@ -3,10 +3,6 @@ import random
 import logging
 import time
 
-logging.basicConfig(
-    format='%(asctime)s %(name)s %(levelname)s %(funcName)s %(message)s'
-)
-
 
 class RandomGame:
     '''

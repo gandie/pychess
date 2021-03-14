@@ -1,6 +1,7 @@
 import chess
 import random
-import logging
+
+from pychess.logfacility import make_logger
 
 
 class PieceExperiment:
@@ -17,8 +18,7 @@ class PieceExperiment:
         self.num_pieces = num_pieces
         self.first_random = first_random
         self.piece_positions = []
-        self.logger = logging.getLogger('PieceExperiment')
-        self.logger.setLevel(loglevel)
+        self.logger = make_logger('PieceExperiment', loglevel)
 
     def place_random_piece(self):
         '''

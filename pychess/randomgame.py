@@ -1,7 +1,8 @@
 import chess
 import random
-import logging
 import time
+
+from pychess.logfacility import make_logger
 
 
 class RandomGame:
@@ -11,8 +12,7 @@ class RandomGame:
 
     def __init__(self, loglevel):
         self.board = chess.Board()
-        self.logger = logging.getLogger('PieceExperiment')
-        self.logger.setLevel(loglevel)
+        self.logger = make_logger('PieceExperiment', loglevel)
 
     def fullRandomStrategy(self):
         return random.choice(list(self.board.legal_moves))

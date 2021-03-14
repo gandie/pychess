@@ -1,6 +1,8 @@
 import chess
 import logging
 
+from pychess.logfacility import make_logger
+
 
 class BoardRating:
     '''
@@ -9,8 +11,7 @@ class BoardRating:
 
     def __init__(self, board, loglevel=logging.DEBUG):
         self.board = board
-        self.logger = logging.getLogger('BoardRating')
-        self.logger.setLevel(loglevel)
+        self.logger = make_logger('BoardRating', loglevel)
 
     def parse_result(self, rating):
 

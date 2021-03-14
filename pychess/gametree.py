@@ -1,6 +1,8 @@
 import chess
 import logging
 
+from pychess.logfacility import make_logger
+
 
 class GameNode:
     '''
@@ -26,10 +28,11 @@ class GameTree:
         self.depth = depth
         self.rating = rating
 
-        self.logger = logging.getLogger('GameTree')
-        self.logger.setLevel(loglevel)
+        self.logger = make_logger('GameTree', loglevel)
 
+        self.logger.info('Starting to build game tree ...')
         self.create_nodes(self.rootNode, self.depth)
+        self.logger.info('GameTree built!')
 
     def create_nodes(self, node, depth):
         '''
@@ -109,4 +112,4 @@ if __name__ == '__main__':
     board = chess.Board()
     tree = GameTree(board, depth=3)
     for node in tree.traverse(tree.rootNode):
-        print(node.board.unicode())
+        print(chess.Board(fen=node.board_fen).unicode())

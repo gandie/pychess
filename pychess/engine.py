@@ -5,6 +5,7 @@ import logging
 
 from pychess.gametree import GameTree
 from pychess.boardrating import BoardRating
+from pychess.logfacility import make_logger
 
 
 class LBChess:
@@ -20,8 +21,7 @@ class LBChess:
         self.fullrandom = fullrandom
         self.depth = depth
 
-        self.logger = logging.getLogger('LBChess')
-        self.logger.setLevel(loglevel)
+        self.logger = make_logger('LBChess', loglevel)
 
     def next_move(self):
         '''

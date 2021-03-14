@@ -37,7 +37,15 @@ class GameTree:
         node_board = chess.Board(fen=node.board_fen)
         for move in node_board.legal_moves:
             node_board.push(move)
-            new_node = GameNode(node_board.fen(), move.uci(), node_board.turn, node, level)
+
+            new_node = GameNode(
+                board_fen=node_board.fen(),
+                move_uci=move.uci(),
+                color=node_board.turn,
+                parent=node,
+                level=level
+            )
+
             print('Node created on level %s' % level)
             if self.rating is not None:
                 rater = self.rating(node_board)
@@ -91,7 +99,6 @@ class GameTree:
                 if not same:
                     continue
                 node.rating = ratings[0]
-
 
 
 if __name__ == '__main__':

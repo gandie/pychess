@@ -1,6 +1,5 @@
 import chess
 import random
-import argparse
 import logging
 
 logging.basicConfig(
@@ -91,7 +90,7 @@ class PieceExperiment:
                     'Took %s iterations! Current number of pieces: %s\n%s' % (
                         iterations,
                         len(self.piece_positions),
-                        self.board,
+                        self.board.unicode(),
                     )
                 )
 
@@ -100,46 +99,4 @@ class PieceExperiment:
             self.num_pieces, chess.piece_name(self.piece_type)
         ))
         self.logger.info('Took %s iterations' % iterations)
-        print(self.board)
-
-
-if __name__ == '__main__':
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '-n',
-        '--numpieces',
-        type=int,
-        help='Number of pieces to place on board',
-        default=8,
-    )
-    parser.add_argument(
-        '-s',
-        '--symbol',
-        type=str,
-        help='Piece type from symbol',
-        default='Q',
-        choices=['P', 'N', 'B', 'R', 'Q', 'K'],
-    )
-    parser.add_argument(
-        '--loglevel',
-        type=str,
-        help='Loglevel',
-        default='INFO',
-        choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG'],
-    )
-    args = parser.parse_args()
-
-    piece = chess.Piece.from_symbol(args.symbol)
-
-    p = PieceExperiment(
-        piece_type=piece.piece_type,
-        num_pieces=args.numpieces,
-        loglevel=args.loglevel,
-    )
-
-    try:
-        p.run()
-    except KeyboardInterrupt:
-        p.logger.error('Experiment interrupted! Current board:')
-        print(p.board)
+        print(self.board.unicode())

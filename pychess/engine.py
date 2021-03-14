@@ -2,8 +2,8 @@ import chess
 import random
 import time
 
-from gametree import GameTree
-from boardrating import BoardRating
+from pychess.gametree import GameTree
+from pychess.boardrating import BoardRating
 
 
 class LBChess:

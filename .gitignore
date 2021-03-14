@@ -1,2 +1,12 @@
 *.pyc
 *.json
+*.egg-info
+dist
+build
+venv3
+__pycache__
+.eggs
+.vscode
+.coverage
+.pytest_cache
+.tox

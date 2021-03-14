@@ -2,9 +2,7 @@ import unittest
 import random
 import chess
 
-from gametree import GameTree
-from boardrating import BoardRating
-from lbchess import LBChess
+from pychess.engine import LBChess
 
 
 class TestLBChess(unittest.TestCase):
@@ -57,7 +55,7 @@ class TestLBChess(unittest.TestCase):
             'Did not detect second move of checkmate in two!'
         )
 
-    def test_checkmate_in_three(self):
+    def notest_checkmate_in_three(self):
         '''
         https://chess.stackexchange.com/questions/34246/black-to-move-and-mate-in-3
 
@@ -77,27 +75,6 @@ class TestLBChess(unittest.TestCase):
             'Did not detect first move of checkmate in two!'
         )
         '''
-
-class TestGameTree(unittest.TestCase):
-
-    def setUp(self):
-        self.board = chess.Board()
-
-    def no_test_fools_mate(self):
-        tree = GameTree(self.board, depth=4, rating=BoardRating)
-        count = 0
-
-        for node in tree.traverse(
-            tree.rootNode,
-            node_filter=lambda n: n.level == 4
-        ):
-            if node.rating['finished']:
-                count += 1
-                print('Interesting board found! %s' % count)
-                print(node.rating)
-                print(node.board.unicode())
-
-        self.assertTrue(count == 8, 'Something is broken haha')
 
 
 if __name__ == '__main__':

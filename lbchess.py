@@ -58,7 +58,7 @@ class LBChess:
             return move
 
         # XXX: do smart things here! do smarter analysis / rating here
-        move = random.choice(possible_nodes).board.pop()
+        move = chess.Move.from_uci(random.choice(possible_nodes).move_uci)
         self.board.push(move)
         return move
 

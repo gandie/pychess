@@ -57,7 +57,7 @@ class TestLBChess(unittest.TestCase):
             'Did not detect second move of checkmate in two!'
         )
 
-    def notest_checkmate_in_three(self):
+    def test_checkmate_in_three(self):
         '''
         https://chess.stackexchange.com/questions/34246/black-to-move-and-mate-in-3
 

@@ -5,8 +5,10 @@ class GameNode:
     '''
     One node in the chess game tree
     '''
-    def __init__(self, board, parent, level):
-        self.board = board
+    def __init__(self, board_fen, move_uci, color, parent, level):
+        self.board_fen = board_fen
+        self.move_uci = move_uci
+        self.color = color
         self.children = []
         self.parent = parent
         self.level = level
@@ -19,7 +21,7 @@ class GameTree:
     '''
 
     def __init__(self, board, depth, rating=None):
-        self.rootNode = GameNode(board, None, 0)
+        self.rootNode = GameNode(board.fen(), None, board.turn, None, 0)
         self.depth = depth
         self.rating = rating
 
@@ -32,14 +34,16 @@ class GameTree:
         if depth == 0:
             return
         level = self.depth - depth + 1
-        for move in node.board.legal_moves:
-            newboard = node.board.copy(stack=False)
-            newboard.push(move)
-            new_node = GameNode(newboard, node, level)
+        node_board = chess.Board(fen=node.board_fen)
+        for move in node_board.legal_moves:
+            node_board.push(move)
+            new_node = GameNode(node_board.fen(), move.uci(), node_board.turn, node, level)
+            print('Node created on level %s' % level)
             if self.rating is not None:
-                rater = self.rating(new_node.board)
+                rater = self.rating(node_board)
                 new_node.rating = rater.rate()
             node.children.append(new_node)
+            node_board.pop()
             self.create_nodes(new_node, depth - 1)
 
     def traverse(self, node, node_filter=None):
@@ -62,7 +66,7 @@ class GameTree:
                 if not node.children:
                     continue
 
-                color = node.board.turn
+                color = node.color
 
                 win_positions = [
                     child

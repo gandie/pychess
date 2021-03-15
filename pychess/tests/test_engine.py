@@ -7,7 +7,7 @@ from pychess.engine import LBChess
 
 class TestLBChess(unittest.TestCase):
 
-    def notest_checkmate_in_one(self):
+    def test_checkmate_in_one(self):
         '''
         https://chess.stackexchange.com/questions/29535/what-moves-solve-this-mate-in-2
 

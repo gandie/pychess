@@ -1,7 +1,33 @@
 import chess
 import logging
+import multiprocessing
+import uuid
 
 from pychess.logfacility import make_logger
+
+
+def create_children(node, level, rating):
+    children = []
+
+    node_board = chess.Board(fen=node.board_fen)
+    for move in node_board.legal_moves:
+        node_board.push(move)
+
+        new_node = GameNode(
+            board_fen=node_board.fen(),
+            move_uci=move.uci(),
+            color=node_board.turn,
+            parent=node,
+            level=level
+        )
+
+        if rating is not None:
+            rater = rating(node_board)
+            new_node.rating = rater.rate()
+        children.append(new_node)
+        node_board.pop()
+
+    return node, children
 
 
 class GameNode:
@@ -15,6 +41,7 @@ class GameNode:
         self.children = []
         self.parent = parent
         self.level = level
+        self.id = uuid.uuid4()
 
 
 class GameTree:
@@ -28,6 +55,10 @@ class GameTree:
         self.depth = depth
         self.rating = rating
 
+        self.node_map = {
+            self.rootNode.id: self.rootNode
+        }
+
         self.logger = make_logger('GameTree', loglevel)
 
         self.logger.info('Starting to build game tree ...')
@@ -39,36 +70,36 @@ class GameTree:
         Build up tree
         '''
 
-        def create_children(node, level):
-            children = []
-
-            node_board = chess.Board(fen=node.board_fen)
-            for move in node_board.legal_moves:
-                node_board.push(move)
-
-                new_node = GameNode(
-                    board_fen=node_board.fen(),
-                    move_uci=move.uci(),
-                    color=node_board.turn,
-                    parent=node,
-                    level=level
-                )
-
-                if self.rating is not None:
-                    rater = self.rating(node_board)
-                    new_node.rating = rater.rate()
-                children.append(new_node)
-                node_board.pop()
-
-            return children
-
         for index in range(0, self.depth):
+            work = []
+            self.logger.info('Creating tree level %s' % (index + 1))
             for node in self.traverse(
                 self.rootNode,
                 node_filter=lambda n: n.level == index
             ):
-                children = create_children(node, index + 1)
-                node.children = children
+                work.append((node, index + 1, self.rating))
+
+            self.logger.info(
+                'Starting worker on level %s, %s tasks' % (
+                    index + 1, len(work)
+                )
+            )
+
+            with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
+                result = pool.starmap(create_children, work, chunksize=10)
+
+            for parent, children in result:
+                self.node_map[parent.id].children = children
+                for child in children:
+                    self.node_map[child.id] = child
+            self.logger.info('Worker finished on level %s' % (index + 1))
+
+    def result_callback(self, result):
+        assert False
+        parent, children = result
+        self.node_map[parent.id].children = children
+        for child in children:
+            self.node_map[child.id] = child
 
     def traverse(self, node, node_filter=None):
         '''
@@ -119,6 +150,6 @@ class GameTree:
 if __name__ == '__main__':
 
     board = chess.Board()
-    tree = GameTree(board, depth=3)
-    for node in tree.traverse(tree.rootNode):
-        print(chess.Board(fen=node.board_fen).unicode())
+    tree = GameTree(board, depth=5)
+    # for node in tree.traverse(tree.rootNode):
+    #    print(chess.Board(fen=node.board_fen).unicode())

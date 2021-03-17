@@ -7,7 +7,7 @@ from pychess.logfacility import make_logger
 
 
 def create_children(node, level, rating):
-    children = []
+    children = {}
 
     node_board = chess.Board(fen=node.board_fen)
     for move in node_board.legal_moves:
@@ -17,31 +17,37 @@ def create_children(node, level, rating):
             board_fen=node_board.fen(),
             move_uci=move.uci(),
             color=node_board.turn,
-            parent=node,
+            parent_id=node.id,
             level=level
         )
 
         if rating is not None:
             rater = rating(node_board)
             new_node.rating = rater.rate()
-        children.append(new_node)
+            del rater
+
+        children[new_node.id] = new_node
         node_board.pop()
 
-    return node, children
+    del node_board
+    return children, node.id
 
 
-class GameNode:
+class GameNode(object):
     '''
     One node in the chess game tree
     '''
-    def __init__(self, board_fen, move_uci, color, parent, level):
+
+    __slots__ = 'board_fen', 'move_uci', 'color', 'parent_id', 'level', 'id', 'rating'
+
+    def __init__(self, board_fen, move_uci, color, parent_id, level):
         self.board_fen = board_fen
         self.move_uci = move_uci
         self.color = color
-        self.children = []
-        self.parent = parent
+        self.parent_id = parent_id
         self.level = level
         self.id = uuid.uuid4()
+        self.rating = None
 
 
 class GameTree:
@@ -56,7 +62,11 @@ class GameTree:
         self.rating = rating
 
         self.node_map = {
-            self.rootNode.id: self.rootNode
+            self.rootNode.id: self.rootNode,
+        }
+
+        self.child_map = {
+            self.rootNode.id: [],
         }
 
         self.logger = make_logger('GameTree', loglevel)
@@ -85,21 +95,22 @@ class GameTree:
                 )
             )
 
-            with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
-                result = pool.starmap(create_children, work, chunksize=10)
+            with multiprocessing.Pool(4) as pool:
+                pool.starmap_async(
+                    create_children,
+                    work,
+                    callback=self.result_callback,
+                    chunksize=10
+                )
+                pool.close()
+                pool.join()
 
-            for parent, children in result:
-                self.node_map[parent.id].children = children
-                for child in children:
-                    self.node_map[child.id] = child
             self.logger.info('Worker finished on level %s' % (index + 1))
 
-    def result_callback(self, result):
-        assert False
-        parent, children = result
-        self.node_map[parent.id].children = children
-        for child in children:
-            self.node_map[child.id] = child
+    def result_callback(self, results):
+        for children, node_id in results:
+            self.node_map.update(children)
+            self.child_map[node_id] = list(children.keys())
 
     def traverse(self, node, node_filter=None):
         '''
@@ -108,8 +119,14 @@ class GameTree:
         '''
         if node_filter is None or node_filter(node):
             yield node
-        for child in node.children:
-            yield from self.traverse(child, node_filter=node_filter)
+        for child_id in self.child_map.get(node.id, []):
+            child_node = self.node_map[child_id]
+            yield from self.traverse(child_node, node_filter=node_filter)
+
+    def children(self, node):
+        return list(
+            self.traverse(node, node_filter=lambda n: n.parent_id == node.id)
+        )
 
     def backpropagation(self):
         for level in range(self.depth - 1, 0, -1):
@@ -118,24 +135,26 @@ class GameTree:
                 node_filter=lambda n: n.level == level
             ):
 
-                if not node.children:
+                children = self.children(node)
+                if not children:
                     continue
 
                 color = node.color
 
                 win_positions = [
                     child
-                    for child in node.children
+                    for child in children
                     if child.rating['finished']
                     and child.rating[color] == 1
                 ]
 
                 if win_positions:
                     node.rating[color] = 0.99
+                    continue
 
                 ratings = [
                     child.rating
-                    for child in node.children
+                    for child in children
                 ]
 
                 same = all(
@@ -144,6 +163,7 @@ class GameTree:
                 )
                 if not same:
                     continue
+
                 node.rating = ratings[0]
 
 
